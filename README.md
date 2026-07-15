@@ -23,7 +23,7 @@ GitHub Actions cron (3h) ────┘                               feed blur
 2. **Add repo secrets** (Settings → Secrets and variables → Actions):
    - `TICKETMASTER_API_KEY` — required
    - `ANTHROPIC_API_KEY` — optional; enables enrichment
-3. **Pick your markets** — edit `config/markets.json` (name, `lat,long`, radius in miles). Defaults to the SF Bay Area.
+3. **Pick your markets** — edit `config/markets.json` (name, `lat,long`, radius in miles). Defaults to San Francisco.
 4. Trigger the **Ingest events** workflow manually (Actions tab → Run workflow) or wait for the next cron tick.
 
 ### Run locally

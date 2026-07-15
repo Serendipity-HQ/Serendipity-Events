@@ -48,6 +48,9 @@ export interface Market {
   name: string;
   latlong: string; // "lat,long"
   radiusMiles: number;
+  /** Optional exact venue-city filter (e.g. "San Francisco"), narrower than the radius. */
+  city?: string;
+  stateCode?: string;
 }
 
 /**

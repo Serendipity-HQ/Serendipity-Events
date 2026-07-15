@@ -131,6 +131,8 @@ export function ticketmasterSource(apiKey: string): EventSource {
           startDateTime: tmTimestamp(now),
           endDateTime: tmTimestamp(end),
         });
+        if (market.city) params.set("city", market.city);
+        if (market.stateCode) params.set("stateCode", market.stateCode);
 
         const res = await fetch(`${BASE_URL}?${params}`);
         if (res.status === 429) {
