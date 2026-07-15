@@ -14,7 +14,7 @@ GitHub Actions cron (3h) ────┘                               feed blur
 1. **Ingest** — `src/sources/ticketmaster.ts` pages through the [Discovery API](https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/) for every market in `config/markets.json` (rate-limit aware, 90-day lookahead).
 2. **Store** — events upsert into `data/events.db` keyed by `(source, source_id)`. Re-ingesting refreshes facts (price, status, date) without touching enrichment. Future events that vanish from the source feed get flagged `unverified`; cancellations from the source are recorded as `cancelled`.
 3. **Enrich (the agentic part)** — new events are batched to Claude, which maps messy source taxonomies onto Serendipity's canonical categories, tags social "vibes" (`date-night`, `family-friendly`, …), and writes a one-line blurb for the feed. Enrichment is idempotent and best-effort: anything that fails is retried on the next run.
-4. **Publish** — upcoming events are exported to `data/events.json` (stable ordering, diffable). The app can consume this directly (repo is public): `https://raw.githubusercontent.com/Serendipity-HQ/Serendipity-Events/main/data/events.json`. A simple filterable browser lives at `index.html`, served via GitHub Pages.
+4. **Publish** — upcoming events are exported to `data/events.json` (stable ordering, diffable). The app can consume this directly (repo is public): `https://raw.githubusercontent.com/Serendipity-HQ/Serendipity-Events/main/data/events.json`.
 5. **Repeat** — `.github/workflows/ingest.yml` runs the whole thing weekly (Mondays 08:17 UTC — tighten the cron when needed) and commits the refreshed data back to the repo. No servers to run.
 
 ## Setup
