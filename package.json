@@ -1,0 +1,26 @@
+{
+  "name": "serendipity-events",
+  "version": "0.1.0",
+  "description": "Agentic event ingestion pipeline for Serendipity — pulls events from source APIs, normalizes and enriches them, and keeps the database fresh.",
+  "type": "module",
+  "scripts": {
+    "ingest": "tsx src/ingest.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.111.0",
+    "better-sqlite3": "^12.11.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.15.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.11.1": true
+  }
+}

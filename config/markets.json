@@ -1,0 +1,9 @@
+[
+  {
+    "name": "San Francisco",
+    "latlong": "37.7749,-122.4194",
+    "radiusMiles": 10,
+    "city": "San Francisco",
+    "stateCode": "CA"
+  }
+]
