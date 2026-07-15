@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Serendipity — San Francisco Events</title>
+<style>
+  :root {
+    --bg: #faf9f7; --card: #ffffff; --ink: #1f2430; --muted: #6b7280;
+    --accent: #b4552d; --line: #e5e1da;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #16181d; --card: #1f2229; --ink: #e8e6e1; --muted: #9aa0ab; --line: #2c3038; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.5 Georgia, "Times New Roman", serif; }
+  header { padding: 28px 20px 8px; max-width: 1080px; margin: 0 auto; }
+  h1 { margin: 0 0 2px; font-size: 1.7rem; font-weight: normal; }
+  h1 em { color: var(--accent); }
+  #count { color: var(--muted); font-size: .95rem; }
+  #filters { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px 20px;
+             max-width: 1080px; margin: 0 auto; position: sticky; top: 0;
+             background: var(--bg); border-bottom: 1px solid var(--line); }
+  input, select { font: inherit; font-size: .95rem; color: var(--ink);
+                  background: var(--card); border: 1px solid var(--line);
+                  border-radius: 8px; padding: 8px 12px; }
+  input { flex: 1 1 220px; }
+  #grid { max-width: 1080px; margin: 0 auto; padding: 20px;
+          display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+          overflow: hidden; display: flex; flex-direction: column; }
+  .card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: var(--line); }
+  .card .body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .card .when { color: var(--accent); font-size: .85rem; }
+  .card h2 { margin: 0; font-size: 1.05rem; font-weight: normal; line-height: 1.3; }
+  .card .where, .card .price { color: var(--muted); font-size: .85rem; }
+  .card a { margin-top: auto; padding-top: 8px; color: var(--accent); font-size: .9rem; text-decoration: none; }
+  .card a:hover { text-decoration: underline; }
+  #empty { grid-column: 1 / -1; color: var(--muted); text-align: center; padding: 60px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>What's on in <em>San Francisco</em></h1>
+  <div id="count">Loading events…</div>
+</header>
+
+<div id="filters">
+  <input id="q" type="search" placeholder="Search events or venues…">
+  <select id="segment"><option value="">All categories</option></select>
+  <select id="when">
+    <option value="">Any date</option>
+    <option value="7">Next 7 days</option>
+    <option value="14">Next 2 weeks</option>
+    <option value="30">Next 30 days</option>
+  </select>
+</div>
+
+<main id="grid"></main>
+
+<script>
+const DATA_URL = "data/events.json";
+let events = [];
+
+const $ = (id) => document.getElementById(id);
+const fmtDate = (e) => {
+  const d = e.starts_at ? new Date(e.starts_at) : (e.local_date ? new Date(e.local_date + "T00:00:00") : null);
+  if (!d) return "Date TBA";
+  return d.toLocaleString(undefined, {
+    weekday: "short", month: "short", day: "numeric",
+    ...(e.starts_at ? { hour: "numeric", minute: "2-digit", timeZone: e.timezone || undefined } : {}),
+  });
+};
+const fmtPrice = (e) => {
+  if (e.price_min == null) return "";
+  const lo = Math.round(e.price_min), hi = e.price_max != null ? Math.round(e.price_max) : null;
+  return hi && hi !== lo ? `$${lo}–$${hi}` : `From $${lo}`;
+};
+
+function render() {
+  const q = $("q").value.trim().toLowerCase();
+  const seg = $("segment").value;
+  const days = $("when").value ? Number($("when").value) : null;
+  const cutoff = days ? Date.now() + days * 86400000 : null;
+
+  const shown = events.filter((e) =>
+    (!q || (e.title + " " + (e.venue_name || "")).toLowerCase().includes(q)) &&
+    (!seg || e.segment === seg) &&
+    (!cutoff || (e.starts_at && new Date(e.starts_at).getTime() <= cutoff))
+  );
+
+  $("count").textContent = `${shown.length} of ${events.length} upcoming events`;
+  $("grid").innerHTML = shown.length
+    ? shown.map((e) => `
+      <article class="card">
+        ${e.image_url ? `<img src="${e.image_url}" alt="" loading="lazy">` : ""}
+        <div class="body">
+          <div class="when">${fmtDate(e)}</div>
+          <h2>${e.title.replace(/</g, "&lt;")}</h2>
+          <div class="where">${(e.venue_name || "Venue TBA").replace(/</g, "&lt;")}</div>
+          ${fmtPrice(e) ? `<div class="price">${fmtPrice(e)}</div>` : ""}
+          ${e.url ? `<a href="${e.url}" target="_blank" rel="noopener">Tickets →</a>` : ""}
+        </div>
+      </article>`).join("")
+    : `<div id="empty">No events match — try clearing a filter.</div>`;
+}
+
+fetch(DATA_URL)
+  .then((r) => r.json())
+  .then((data) => {
+    // Belt and braces: the pipeline already ingests SF-only, but never show anything else.
+    events = data.events.filter((e) => e.city === "San Francisco");
+    const segs = [...new Set(events.map((e) => e.segment).filter((s) => s && s !== "Undefined"))].sort();
+    $("segment").innerHTML += segs.map((s) => `<option>${s}</option>`).join("");
+    render();
+  })
+  .catch(() => { $("count").textContent = "Couldn't load events — try refreshing."; });
+
+["q", "segment", "when"].forEach((id) => $(id).addEventListener("input", render));
+</script>
+</body>
+</html>
