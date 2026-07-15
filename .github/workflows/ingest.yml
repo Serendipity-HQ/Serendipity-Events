@@ -2,8 +2,9 @@ name: Ingest events
 
 on:
   schedule:
-    # Every 3 hours (offset from :00 to avoid the top-of-hour GitHub cron rush)
-    - cron: "17 */3 * * *"
+    # Weekly — Mondays 08:17 UTC (offset from :00 to avoid the top-of-hour
+    # GitHub cron rush). Tighten the cadence here when the app needs it.
+    - cron: "17 8 * * 1"
   workflow_dispatch:
 
 concurrency:

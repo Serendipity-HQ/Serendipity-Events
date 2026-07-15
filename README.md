@@ -15,7 +15,7 @@ GitHub Actions cron (3h) ────┘                               feed blur
 2. **Store** — events upsert into `data/events.db` keyed by `(source, source_id)`. Re-ingesting refreshes facts (price, status, date) without touching enrichment. Future events that vanish from the source feed get flagged `unverified`; cancellations from the source are recorded as `cancelled`.
 3. **Enrich (the agentic part)** — new events are batched to Claude, which maps messy source taxonomies onto Serendipity's canonical categories, tags social "vibes" (`date-night`, `family-friendly`, …), and writes a one-line blurb for the feed. Enrichment is idempotent and best-effort: anything that fails is retried on the next run.
 4. **Publish** — upcoming events are exported to `data/events.json` (stable ordering, diffable). The app can consume this directly via `raw.githubusercontent.com` until we stand up a real API.
-5. **Repeat** — `.github/workflows/ingest.yml` runs the whole thing every 3 hours and commits the refreshed data back to the repo. No servers to run.
+5. **Repeat** — `.github/workflows/ingest.yml` runs the whole thing weekly (Mondays 08:17 UTC — tighten the cron when needed) and commits the refreshed data back to the repo. No servers to run.
 
 ## Setup
 
